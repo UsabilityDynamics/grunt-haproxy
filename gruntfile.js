@@ -42,8 +42,6 @@ module.exports = function(grunt) {
     // Configuration to be run (and then tested).
     haproxy: {
       options: {
-        daemon: false,
-        pid: null,
         check: false
       },
       wamp: {
