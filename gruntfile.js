@@ -10,8 +10,19 @@
 
 module.exports = function(grunt) {
 
+  // Automatically Load Tasks.
+  require( 'load-grunt-tasks' )( grunt, {
+    pattern: 'grunt-*',
+    config: './package.json',
+    scope: 'devDependencies'
+  });
+
   // Project configuration.
   grunt.initConfig({
+
+    // Get Project Package.
+    package: grunt.file.readJSON( 'package.json' ),
+
     jshint: {
       all: [
         'Gruntfile.js',
@@ -30,44 +41,69 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     haproxy: {
-      default_options: {
-        options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
+      options: {
+        daemon: false,
+        pid: null,
+        check: false
       },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
+      wamp: {
+        src: [ 'test/fixtures/haproxy-wamp.cfg' ],
+        dest: [ '/var/run/haproxy-wamp.pid' ]
       }
     },
 
     // Unit tests.
     nodeunit: {
       tests: ['test/*_test.js']
+    },
+
+    watch: {
+      haproxy: {
+        files: 'test/fixtures/*.cfg',
+        tasks: 'haproxy'
+      }
+    },
+
+    // Notification.
+    notify: {
+      options: {
+        title: "HAProxy",
+        enabled: true,
+        max_jshint_notifications: 3
+      },
+      haproxyStarted: {
+        options: {
+          message: 'Haproxy started.'
+        }
+      },
+      haproxyFailed: {
+        options: {
+          message: 'Haproxy failed to start.'
+        }
+      },
+      haproxyReloaded: {
+        options: {
+          message: 'Haproxy reloaded.'
+        }
+      },
+      haproxyStopped: {
+        options: {
+          message: 'Haproxy stopped.'
+        }
+      }
     }
+
 
   });
 
   // Actually load this plugin's task(s).
   grunt.loadTasks('tasks');
 
-  // These plugins provide necessary tasks.
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-nodeunit');
-
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
   grunt.registerTask('test', ['clean', 'haproxy', 'nodeunit']);
 
   // By default, lint and run all tests.
-  grunt.registerTask('default', ['jshint', 'test']);
+  grunt.registerTask('default', ['haproxy']);
 
 };
